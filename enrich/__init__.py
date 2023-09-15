@@ -77,7 +77,7 @@ def clearbit_name_to_domain_call(row):
     try:
         company_data = requests.get(f'https://company.clearbit.com/v1/domains/find?',headers=headers,params = params)
         company_data.raise_for_status()
-     except requests.exceptions.HTTPError as err:
+    except requests.exceptions.HTTPError as err:
         ''' A http error means the name provided is from an unknown company 
             so we return the original data name and domain without updates '''
         return(row)
@@ -89,7 +89,7 @@ def clearbit_enrichment_call(row):
     try:
         company_data = requests.get(f'https://company.clearbit.com/v2/companies/find?',headers=headers,params = params)
         company_data.raise_for_status()
-     except requests.exceptions.HTTPError as err:
+    except requests.exceptions.HTTPError as err:
         ''' A http error means the domain provided is invalid 
             so we return the original data name and domain without updates '''
         return(row)
