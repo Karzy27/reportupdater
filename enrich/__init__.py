@@ -11,10 +11,12 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 AUTH_KEY_CLEARBIT = 'sk_f684554b14daff33940a73c80fa134fb'
-FIELDNAMES = ['date','company_name','company_domain','spend','currency_code']
+FIELDNAMES = ['date','company_name','company_domain','spend','currency_code','spend_converted','currency_code_converted']
 
 
 def parse_args(args):
+    currencies = get_currencies()
+    currency_symbols = list(currencies.keys())
     parser = argparse.ArgumentParser(
         prog='enrich',
         description=f"""
@@ -32,7 +34,7 @@ def parse_args(args):
         '--currency',
         '-c',
         type=str,
-        choices=['USD'],
+        choices=currency_symbols,
                     default='USD', required=False,
         help='Currency to wich convert spend'
     )
@@ -65,6 +67,30 @@ def parse_args(args):
 
     return args
 
+def get_currencies():
+
+    try:
+        response = requests.get(f'https://api.frankfurter.app/currencies')
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        logger.error(f'Currency list is unavaliable: {err}')
+
+    return response.json()
+
+def frankfurter_call(row,currency):
+    params = {'amount':row['spend'], 'to':currency, 'from':row['currency_code']}
+    try:
+        response = requests.get(f'https://api.frankfurter.app/latest?',params = params)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        logger.warning(f"Could not convert company ({row[]}) spend to desired currency {currency}: {ex} moving to next entry conversion")
+        failed_data = {'spend':'','currency_code':row['ERROR']}
+        return failed_data
+    converted_data = response.json()
+    converted_data = {'spend':converted_data['rates'][currency],'currency_code':currency}
+    return converted_data
+
+
 def clearbit_call(row,route):
     if route == "domain":
         return clearbit_enrichment_call(row)
@@ -75,27 +101,27 @@ def clearbit_name_to_domain_call(row):
     headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
     params = {'name':row['company_name']}
     try:
-        company_data = requests.get(f'https://company.clearbit.com/v1/domains/find?',headers=headers,params = params)
-        company_data.raise_for_status()
+        response = requests.get(f'https://company.clearbit.com/v1/domains/find?',headers=headers,params = params)
+        response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         ''' A http error means the name provided is from an unknown company 
             so we return the original data name and domain without updates '''
         original_data = {'name':row['company_name'],'domain':row['company_domain']}
         return original_data
-    return company_data.json()
+    return response.json()
 
 def clearbit_enrichment_call(row):
     headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
     params = {'domain':row['company_domain']}
     try:
-        company_data = requests.get(f'https://company.clearbit.com/v2/companies/find?',headers=headers,params = params)
-        company_data.raise_for_status()
+        response = requests.get(f'https://company.clearbit.com/v2/companies/find?',headers=headers,params = params)
+        response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         ''' A http error means the domain provided is invalid 
             so we return the original data name and domain without updates '''
         original_data = {'name':row['company_name'],'domain':row['company_domain']}
         return original_data
-    return company_data.json()
+    return response.json()
 
 def enrich_report(input_file,currency,output_file,file_type):  
     updated_rows = 0   
@@ -109,10 +135,13 @@ def enrich_report(input_file,currency,output_file,file_type):
                     results = clearbit_call(row,'domain')
                 else:
                     results = clearbit_call(row,'name')
-                if row['company_name'] != results['name'] or row['company_domain'] != results['domain']:
+                conversion = frankfurter_call(row,currency)
+                if row['company_name'] != results['name'] or row['company_domain'] != results['domain'] or row['currency_code'] != conversion['currency_code'] :
                     updated_rows += 1
                 row['company_name'] = results['name']
                 row['company_domain'] = results['domain']
+                row['spend_converted'] = conversion['spend']
+                row['currency_code_converted'] = conversion['currency_code']
                 writer.writerow(row)
     print(f'Rows updated : {updated_rows}')
     print(f'Output file written to {output_file} in {file_type}')
