@@ -80,7 +80,8 @@ def clearbit_name_to_domain_call(row):
     except requests.exceptions.HTTPError as err:
         ''' A http error means the name provided is from an unknown company 
             so we return the original data name and domain without updates '''
-        return(row)
+        original_data = {'name':row['company_name'],'domain':row['domain']}
+        return(original data)
     return company_data.json()
 
 def clearbit_enrichment_call(row):
@@ -92,7 +93,8 @@ def clearbit_enrichment_call(row):
     except requests.exceptions.HTTPError as err:
         ''' A http error means the domain provided is invalid 
             so we return the original data name and domain without updates '''
-        return(row)
+        original_data = {'name':row['company_name'],'domain':row['domain']}
+        return(original data)
     return company_data.json()
 
 def enrich_report(input_file,currency,output_file,file_type):  
