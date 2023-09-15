@@ -112,7 +112,7 @@ def clearbit_call(row,search_selection):
         return original_data
     return response.json()
 
-def updater_and_converter(row):
+def updater_and_converter(row,currency):
     updated_rows = False
     if row['company_name'] == '':
         results = clearbit_call(row,'domain')
@@ -127,23 +127,23 @@ def updater_and_converter(row):
     row['currency_code_converted'] = conversion['currency_code']
     return updated_row,updated
 
-def csv_file_writer(output_file,fieldnames,reader):
+def csv_file_writer(output_file,fieldnames,reader,currency):
     updated_rows=0
     with open(output_file,'w', newline='') as csv_out_file:
         writer = csv.DictWriter(csv_out_file, fieldnames=fieldnames)
         writer.writeheader()
         for row in reader:
-            updated_row,updated = updater_and_converter(row)
+            updated_row,updated = updater_and_converter(row,currency)
             if updated:
                 updated_rows += 1
             writer.writerow(updated_row)
     return updated_rows
 
-def jsonl_file_writer(output_file,reader):
+def jsonl_file_writer(output_file,reader,currency):
     updated_rows=0
     with open(output_file, 'w') as jsonl_out_file:
         for row in reader:
-            updated_row,updated = updater_and_converter(row)
+            updated_row,updated = updater_and_converter(row,currency)
             if updated:
                 updated_rows += 1
             json.dump(updated_row, jsonl_out_file)
@@ -156,10 +156,10 @@ def enrich_report(input_file,currency,output_file,file_type):
         reader = csv.DictReader(csv_in_file)
         if file_type == 'CSV':
             output_file = output_file.replace('.jsonl','.csv')
-            csv_file_writer(output_file,fieldnames,reader)
+            csv_file_writer(output_file,fieldnames,reader,currency)
         else:
             output_file = output_file.replace('.csv','.jsonl')
-            jsonl_file_writer(output_file,reader)
+            jsonl_file_writer(output_file,reader,currency)
     print(f'Rows updated : {updated_rows}')
     print(f'Output file written to {output_file} in {file_type}')
         
