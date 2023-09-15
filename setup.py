@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name="infoCompany",
+    name="reportupdater",
     version="0.1.0",
-    description="InfoCompany CLI",
+    description="reportupdater CLI",
     classifiers=["Programming Language :: Python :: 3.11"],
     install_requires=[
         "requests",
@@ -15,8 +15,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'enrich= infoCompany:entrypoint',
+            'enrich= enrich:entrypoint',
         ]
     },
-    packages=["infoCompany"]
+    packages=["enrich"]
 )
