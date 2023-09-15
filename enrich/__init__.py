@@ -113,18 +113,19 @@ def clearbit_call(row,search_selection):
     return response.json()
 
 def updater_and_converter(row,currency):
-    updated_rows = False
+    updated = False
     if row['company_name'] == '':
         results = clearbit_call(row,'domain')
     else:
         results = clearbit_call(row,'name')
     conversion = frankfurter_call(row,currency)
     if row['company_name'] != results['name'] or row['company_domain'] != results['domain'] or (row['currency_code'] != conversion['currency_code'] and conversion['currency_code'] != 'ERROR'):
-        updated_row = True
-    row['company_name'] = results['name']
-    row['company_domain'] = results['domain']
-    row['spend_converted'] = conversion['spend']
-    row['currency_code_converted'] = conversion['currency_code']
+        updated = True
+    updated_row = row
+    updated_row['company_name'] = results['name']
+    updated_row['company_domain'] = results['domain']
+    updated_row['spend_converted'] = conversion['spend']
+    updated_row['currency_code_converted'] = conversion['currency_code']
     return updated_row,updated
 
 def csv_file_writer(output_file,fieldnames,reader,currency):
