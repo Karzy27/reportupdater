@@ -157,10 +157,10 @@ def enrich_report(input_file,currency,output_file,file_type):
         reader = csv.DictReader(csv_in_file)
         if file_type == 'CSV':
             output_file = output_file.replace('.jsonl','.csv')
-            csv_file_writer(output_file,fieldnames,reader,currency)
+            updated_rows = csv_file_writer(output_file,fieldnames,reader,currency)
         else:
             output_file = output_file.replace('.csv','.jsonl')
-            jsonl_file_writer(output_file,reader,currency)
+            updated_rows = jsonl_file_writer(output_file,reader,currency)
     print(f'Rows updated : {updated_rows}')
     print(f'Output file written to {output_file} in {file_type}')
         
