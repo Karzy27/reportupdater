@@ -79,13 +79,21 @@ def get_currencies():
 
 def frankfurter_call(row,currency):
     params = {'amount':row['spend'], 'to':currency, 'from':row['currency_code']}
+
+    if currency == row['currency_code']:
+        same_data = {'spend':row['spend'],'currency_code':row['currency_code']}
+        return same_data
+
     try:
         response = requests.get(f'https://api.frankfurter.app/latest?',params = params)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        logger.warning(f"Could not convert company ({row['company_name']}) spend to desired currency {currency}: {err} moving to next entry conversion")
+        logger.warning(f'''Could not convert company ({row['company_name']}) spend to desired currency {currency}:
+         {err}
+         Moving to next entry conversion''')
         failed_data = {'spend':'','currency_code':'ERROR'}
         return failed_data
+        
     converted_data = response.json()
     converted_data = {'spend':converted_data['rates'][currency],'currency_code':currency}
     return converted_data
