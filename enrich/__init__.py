@@ -67,9 +67,9 @@ def parse_args(args):
 
 def clearbit_call(row,route):
     if route == "domain":
-        clearbit_enrichment_call(row)
+        return clearbit_enrichment_call(row)
     else:
-        clearbit_name_to_domain_call(row)
+        return clearbit_name_to_domain_call(row)
 
 def clearbit_name_to_domain_call(row):
     headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
