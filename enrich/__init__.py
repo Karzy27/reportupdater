@@ -68,7 +68,6 @@ def parse_args(args):
     return args
 
 def get_currencies():
-
     try:
         response = requests.get(f'https://api.frankfurter.app/currencies')
         response.raise_for_status()
@@ -99,11 +98,7 @@ def frankfurter_call(row,currency):
     return converted_data
 
 
-def clearbit_call(row,search_selection):
-    #if route == "domain":
-     #   return clearbit_enrichment_call(row)
-    #else:
-    #    return clearbit_name_to_domain_call(row)
+def clearbit_call(row,search_selection):  
     headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
     params = {search_selection:row[f'company_{search_selection}']}
     if search_selection == 'domain':
@@ -120,32 +115,6 @@ def clearbit_call(row,search_selection):
         return original_data
     return response.json()
 
-
-def clearbit_name_to_domain_call(row):
-    headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
-    params = {'name':row['company_name']}
-    try:
-        response = requests.get(f'https://company.clearbit.com/v1/domains/find?',headers=headers,params = params)
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as err:
-        ''' A http error means the name provided is from an unknown company 
-            so we return the original data name and domain without updates '''
-        original_data = {'name':row['company_name'],'domain':row['company_domain']}
-        return original_data
-    return response.json()
-
-def clearbit_enrichment_call(row):
-    headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
-    params = {'domain':row['company_domain']}
-    try:
-        response = requests.get(f'https://company.clearbit.com/v2/companies/find?',headers=headers,params = params)
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as err:
-        # A http error means the domain provided is invalid 
-        # so we return the original data name and domain without updates
-        original_data = {'name':row['company_name'],'domain':row['company_domain']}
-        return original_data
-    return response.json()
 
 def enrich_report(input_file,currency,output_file,file_type):  
     updated_rows = 0   
