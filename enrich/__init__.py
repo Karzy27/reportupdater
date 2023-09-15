@@ -93,17 +93,33 @@ def frankfurter_call(row,currency):
          Moving to next entry conversion''')
         failed_data = {'spend':'','currency_code':'ERROR'}
         return failed_data
-        
+
     converted_data = response.json()
     converted_data = {'spend':converted_data['rates'][currency],'currency_code':currency}
     return converted_data
 
 
-def clearbit_call(row,route):
-    if route == "domain":
-        return clearbit_enrichment_call(row)
+def clearbit_call(row,search_selection):
+    #if route == "domain":
+     #   return clearbit_enrichment_call(row)
+    #else:
+    #    return clearbit_name_to_domain_call(row)
+    headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
+    params = {search_selection:row[f'company_{search_selection}']}
+    if search_selection == 'domain':
+        http_path = 'https://company.clearbit.com/v2/companies/find?'
     else:
-        return clearbit_name_to_domain_call(row)
+        http_path = 'https://company.clearbit.com/v1/domains/find?'
+    try:
+        response = requests.get(http_path,headers=headers,params = params)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        ''' A http error means the name/domain provided is from an unknown company 
+            so we return the original data name and domain without updates '''
+        original_data = {'name':row['company_name'],'domain':row['company_domain']}
+        return original_data
+    return response.json()
+
 
 def clearbit_name_to_domain_call(row):
     headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
@@ -125,8 +141,8 @@ def clearbit_enrichment_call(row):
         response = requests.get(f'https://company.clearbit.com/v2/companies/find?',headers=headers,params = params)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        ''' A http error means the domain provided is invalid 
-            so we return the original data name and domain without updates '''
+        # A http error means the domain provided is invalid 
+        # so we return the original data name and domain without updates
         original_data = {'name':row['company_name'],'domain':row['company_domain']}
         return original_data
     return response.json()
