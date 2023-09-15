@@ -139,7 +139,7 @@ def csv_file_writer(output_file,fieldnames,reader):
             writer.writerow(updated_row)
     return updated_rows
 
-def jsonl_file_writer(output_file,fieldnames,reader)
+def jsonl_file_writer(output_file,fieldnames,reader):
     updated_rows=0
     with open(output_file, 'w') as jsonl_out_file:
         for row in reader:
