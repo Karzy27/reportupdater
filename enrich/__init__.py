@@ -68,7 +68,7 @@ def parse_args(args):
         parser.error(str(err))
     # Checking the output path is a valid path
     directory,filename = os.path.split(args.output)
-    if not os.path.isdir(directory):
+    if not os.path.isdir(directory) and directory != '':
         parser.error(f"{directory} is not a valid directory")
     root,ext = os.path.splitext(filename)
     if ext not in ['.csv','.jsonl'] :
