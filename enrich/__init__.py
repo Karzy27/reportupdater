@@ -13,6 +13,13 @@ logger = logging.getLogger(__name__)
 AUTH_KEY_CLEARBIT = 'sk_f684554b14daff33940a73c80fa134fb'
 FIELDNAMES = ['date','company_name','company_domain','spend','currency_code','spend_converted','currency_code_converted']
 
+def get_currencies():
+    try:
+        response = requests.get(f'https://api.frankfurter.app/currencies')
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        logger.error(f'Currency list is unavaliable: {err}')
+    return response.json()
 
 def parse_args(args):
     currencies = get_currencies()
@@ -53,46 +60,36 @@ def parse_args(args):
         help='File type of the updated report'
     )
     args = parser.parse_args(args)
-
     # Checking the input report provided is a valid file
     try: 
         with open(args.input, newline='') as csvfile:
             reader = csv.DictReader(csvfile)       
-    except Exception as e:
-        parser.error(str(e))
-
+    except Exception as err:
+        parser.error(str(err))
     # Checking the output path is a valid path
-    #if not os.path.isdir(args.output):
-     #   parser.error(f"{args.output} is not a valid directory")
+    directory,filename = os.path.split(args.output)
+    if not os.path.isdir(directory):
+        parser.error(f"{directory} is not a valid directory")
+    root,ext = os.path.splitext(filename)
+    if ext not in ['.csv','.jsonl'] :
+        parser.error(f"{filename} is not a valid file name")
 
     return args
 
-def get_currencies():
-    try:
-        response = requests.get(f'https://api.frankfurter.app/currencies')
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as err:
-        logger.error(f'Currency list is unavaliable: {err}')
-
-    return response.json()
-
 def frankfurter_call(row,currency):
     params = {'amount':row['spend'], 'to':currency, 'from':row['currency_code']}
-
     if currency == row['currency_code']:
         same_data = {'spend':row['spend'],'currency_code':row['currency_code']}
         return same_data
-
     try:
         response = requests.get(f'https://api.frankfurter.app/latest?',params = params)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         logger.warning(f'''Could not convert company ({row['company_name']}) spend to desired currency {currency}:
          {err}
-         Moving to next entry conversion''')
+    Moving to next entry conversion''')
         failed_data = {'spend':'','currency_code':'ERROR'}
         return failed_data
-
     converted_data = response.json()
     converted_data = {'spend':converted_data['rates'][currency],'currency_code':currency}
     return converted_data
@@ -115,27 +112,54 @@ def clearbit_call(row,search_selection):
         return original_data
     return response.json()
 
+def updater_and_converter(row):
+    updated_rows = False
+    if row['company_name'] == '':
+        results = clearbit_call(row,'domain')
+    else:
+        results = clearbit_call(row,'name')
+    conversion = frankfurter_call(row,currency)
+    if row['company_name'] != results['name'] or row['company_domain'] != results['domain'] or (row['currency_code'] != conversion['currency_code'] and conversion['currency_code'] != 'ERROR'):
+        updated_row = True
+    row['company_name'] = results['name']
+    row['company_domain'] = results['domain']
+    row['spend_converted'] = conversion['spend']
+    row['currency_code_converted'] = conversion['currency_code']
+    return updated_row,updated
+
+def csv_file_writer(output_file,fieldnames,reader):
+    updated_rows=0
+    with open(output_file,'w', newline='') as csv_out_file:
+        writer = csv.DictWriter(csv_out_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in reader:
+            updated_row,updated = updater_and_converter(row)
+            if updated:
+                updated_rows += 1
+            writer.writerow(updated_row)
+    return updated_rows
+
+def jsonl_file_writer(output_file,fieldnames,reader)
+    updated_rows=0
+    with open(output_file, 'w') as jsonl_out_file:
+        for row in reader:
+            updated_row,updated = updater_and_converter(row)
+            if updated:
+                updated_rows += 1
+            json.dump(updated_row, jsonl_out_file)
+            jsonl_out_file.write('\n')
+    return updated_rows
 
 def enrich_report(input_file,currency,output_file,file_type):  
-    updated_rows = 0   
+       
     with open(input_file, newline='') as csv_in_file:
         reader = csv.DictReader(csv_in_file)
-        with open(output_file,'w', newline='') as csv_out_file:
-            writer = csv.DictWriter(csv_out_file, fieldnames=FIELDNAMES)
-            writer.writeheader()
-            for row in reader:
-                if row['company_name'] == '':
-                    results = clearbit_call(row,'domain')
-                else:
-                    results = clearbit_call(row,'name')
-                conversion = frankfurter_call(row,currency)
-                if row['company_name'] != results['name'] or row['company_domain'] != results['domain'] or row['currency_code'] != conversion['currency_code'] :
-                    updated_rows += 1
-                row['company_name'] = results['name']
-                row['company_domain'] = results['domain']
-                row['spend_converted'] = conversion['spend']
-                row['currency_code_converted'] = conversion['currency_code']
-                writer.writerow(row)
+        if file_type == 'CSV':
+            output_file = output_file.replace('.jsonl','.csv')
+            csv_file_writer()
+        else:
+            output_file = output_file.replace('.csv','.jsonl')
+            jsonl_file_writer()
     print(f'Rows updated : {updated_rows}')
     print(f'Output file written to {output_file} in {file_type}')
         
