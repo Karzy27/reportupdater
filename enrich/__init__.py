@@ -11,6 +11,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 AUTH_KEY_CLEARBIT = 'sk_f684554b14daff33940a73c80fa134fb'
+FIELDNAMES = ['date','company_name','company_domain','spend','currency_code']
 
 
 def parse_args(args):
@@ -63,22 +64,49 @@ def parse_args(args):
      #   parser.error(f"{args.output} is not a valid directory")
 
     return args
-    
 
-def enrich_report(input_file,currency,output_file,file_type):
+def clearbit_call(row,route):
+    if route == "domain":
+        clearbit_enrichment_call(row)
+    else:
+        clearbit_name_to_domain_call(row)
+
+def clearbit_name_to_domain_call(row):
     headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
-    updated_rows = 0
-    fieldnames = ['date','company_name','company_domain','spend','currency_code']
+    params = {'name':row['company_name']}
+    try:
+        company_data = requests.get(f'https://company.clearbit.com/v1/domains/find?',headers=headers,params = params)
+        company_data.raise_for_status()
+     except requests.exceptions.HTTPError as err:
+        ''' A http error means the name provided is from an unknown company 
+            so we return the original data name and domain without updates '''
+        return(row)
+    return company_data.json()
+
+def clearbit_enrichment_call(row):
+    headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
+    params = {'domain':row['company_domain']}
+    try:
+        company_data = requests.get(f'https://company.clearbit.com/v2/companies/find?',headers=headers,params = params)
+        company_data.raise_for_status()
+     except requests.exceptions.HTTPError as err:
+        ''' A http error means the domain provided is invalid 
+            so we return the original data name and domain without updates '''
+        return(row)
+    return company_data.json()
+
+def enrich_report(input_file,currency,output_file,file_type):  
+    updated_rows = 0   
     with open(input_file, newline='') as csv_in_file:
         reader = csv.DictReader(csv_in_file)
         with open(output_file,'w', newline='') as csv_out_file:
-            writer = csv.DictWriter(csv_out_file, fieldnames=fieldnames)
+            writer = csv.DictWriter(csv_out_file, fieldnames=FIELDNAMES)
             writer.writeheader()
             for row in reader:
-                params = {'name':row['company_name']}
-                company_data = requests.get(f'https://company.clearbit.com/v1/domains/find?',headers=headers,params = params)
-                company_data.raise_for_status()
-                results = company_data.json()
+                if row['company_name'] == '':
+                    results = clearbit_call(row,'domain')
+                else:
+                    results = clearbit_call(row,'name')
                 if row['company_name'] != results['name'] or row['company_domain'] != results['domain']:
                     updated_rows += 1
                 row['company_name'] = results['name']
