@@ -97,13 +97,13 @@ def parse_args(args):
 
     return args
 
-def frankfurter_call(currency,**kwargs):
+def frankfurter_call(currency,row):
     '''
     Provides a spend conversion from a determined currency to another currency
     Uses Frankfurter API
     Parameters:
         - currency (String) : Symbol of the currency to convert spend to
-        - kwargs (Dict) : Entry from a csv containing data from a company
+        - row (Dict) : Entry from a csv containing data from a company
             expected {key:value} :
             - currency_code(String) : Current spend currency symbol
             - spend(Int) : Amount of money expressed in currency_code
@@ -111,18 +111,18 @@ def frankfurter_call(currency,**kwargs):
         - Dict containing spend in converted currency and converted currency symbol
     '''
 
-    params = {'amount':kwargs['spend'], 'to':currency, 'from':kwargs['currency_code']}
+    params = {'amount':row['spend'], 'to':currency, 'from':row['currency_code']}
     
     # Check if both currencies are the same
-    if currency == kwargs['currency_code']:
-        same_data = {'spend':kwargs['spend'],'currency_code':kwargs['currency_code']}
+    if currency == row['currency_code']:
+        same_data = {'spend':row['spend'],'currency_code':row['currency_code']}
         return same_data
 
     try:
         response = requests.get(f'https://api.frankfurter.app/latest?',params = params)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        logger.warning(f'''Could not convert company ({kwargs['company_name']}) spend to desired currency {currency}:
+        logger.warning(f'''Could not convert company ({row['company_name']}) spend to desired currency {currency}:
          {err}''')
         failed_data = {'spend':'','currency_code':'ERROR'}
         return failed_data
@@ -132,7 +132,7 @@ def frankfurter_call(currency,**kwargs):
     return converted_data
 
 
-def clearbit_call(search_selection,**kwargs):
+def clearbit_call(search_selection,row):
     '''
     Provides a company’s name and domain update
     Uses Clearbit API
@@ -140,7 +140,7 @@ def clearbit_call(search_selection,**kwargs):
         - search_selection (String) : Flag that determines the type of search
             - "domain" : search using the company’s domain
             - "name"   : search using the company’s name
-        - kwargs (Dict) : Entry from a csv containing data from a company
+        - row (Dict) : Entry from a csv containing data from a company
             expected {key:value} :
             - company_name(String) : name of the company
             - company_domain(String) : domain of the company
@@ -148,7 +148,7 @@ def clearbit_call(search_selection,**kwargs):
         - Dict containing updated company name and company domain
     '''  
     headers = {'Authorization': f'Bearer {AUTH_KEY_CLEARBIT}'}
-    params = {search_selection:kwargs[f'company_{search_selection}']}
+    params = {search_selection:row[f'company_{search_selection}']}
 
     if search_selection == 'domain':
         http_path = 'https://company.clearbit.com/v2/companies/find?'
@@ -161,36 +161,36 @@ def clearbit_call(search_selection,**kwargs):
     except requests.exceptions.HTTPError as err:
         # A http error means the name/domain provided is from an unknown company 
         # so we return the original data name and domain without updates
-        original_data = {'name':kwargs['company_name'],'domain':kwargs['company_domain']}
+        original_data = {'name':row['company_name'],'domain':row['company_domain']}
         return original_data
 
     return response.json()
 
-def updater_and_converter(currency,**kwargs):
+def updater_and_converter(currency,row):
     '''
     Updates entries company’s name, domain and converts company’s spend to a provided currency 
     Parameters:
         - currency (String) : Symbol of the currency to convert spend to
-        - kwargs (Dict) : Entry from a csv containing data from a company
+        - row (Dict) : Entry from a csv containing data from a company
     Returns:
         - Updated entry of company’s data (if posible)
         - Flag indicating if entry could be updated
     '''
     # Calling the name and domain updating function
     updated = False
-    if kwargs['company_name'] == '':
-        results = clearbit_call('domain',kwargs)
+    if row['company_name'] == '':
+        results = clearbit_call('domain',row)
     else:
-        results = clearbit_call('name',kwargs)
+        results = clearbit_call('name',row)
 
     # Calling the spend conversion function
-    conversion = frankfurter_call(currency,kwargs)
+    conversion = frankfurter_call(currency,row)
 
     # Checking if entry was updated
-    if kwargs['company_name'] != results['name'] or kwargs['company_domain'] != results['domain'] or (kwargs['currency_code'] != conversion['currency_code'] and conversion['currency_code'] != 'ERROR'):
+    if row['company_name'] != results['name'] or row['company_domain'] != results['domain'] or (row['currency_code'] != conversion['currency_code'] and conversion['currency_code'] != 'ERROR'):
         updated = True
     # Generating updated entry with new fields  
-    updated_row = kwargs
+    updated_row = row
     updated_row['company_name'] = results['name']
     updated_row['company_domain'] = results['domain']
     updated_row['spend_converted'] = conversion['spend']
