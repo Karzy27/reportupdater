@@ -40,7 +40,7 @@ def parse_args(args):
 
     # Creating parser
     parser = argparse.ArgumentParser(
-        prog='reportupdater',
+        prog='enrich',
         description=f'''
         Reportupdater enriches information companies, generates a file
         with updated company’s name, domain and converts its spend into a currency of your choosing.
@@ -100,7 +100,7 @@ def parse_args(args):
 
     directory,filename = os.path.split(args.input)
     root,ext = os.path.splitext(filename)
-    if ext != 'csv' :
+    if ext != '.csv' :
         parser.error(f'{filename} is not a csv file')
 
     # Checking the output path is a valid path
