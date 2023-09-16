@@ -168,7 +168,7 @@ def clearbit_call(search_selection,**kwargs):
 
 def updater_and_converter(currency,**kwargs):
     '''
-    Updates company’s name, domain and converts company’s spend to a provided currency 
+    Updates entries company’s name, domain and converts company’s spend to a provided currency 
     Parameters:
         - currency (String) : Symbol of the currency to convert spend to
         - kwargs (Dict) : Entry from a csv containing data from a company
@@ -252,7 +252,6 @@ def enrich_report(input_file,currency,output_file,file_type):
     Returns:
         - None
     ''' 
-       
     with open(input_file, newline='') as csv_in_file:
         reader = csv.DictReader(csv_in_file)
         # Checking type of the input file
@@ -268,7 +267,7 @@ def enrich_report(input_file,currency,output_file,file_type):
 
 
 def entrypoint():
-     """
+    """
     Entry point to reportupdater CLI
     Returns:
         - None
