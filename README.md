@@ -47,11 +47,31 @@ options:
                         File type of the updated report
 ```
 
-## Usage
+## Example usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+```sh
+cat input.csv
+date,company_name,company_domain,spend,currency_code
+2023-09-01,,intel.com,10432.56,USD
+2023-09-02,,intel.com,9354.02,USD
+2023-09-01,Shopify,shopify.com.com,6778.45,EUR
+2023-09-01,IBM,,14876.78,USD
+2023-09-01,,,21375.65,EUR
+```
 
+```sh
+>enrich -i input.csv -o output.csv
+Rows updated : 5
+Output file written to output.csv in CSV
+```
 
+```sh
+cat output.csv
+date,company_name,company_domain,spend,currency_code,spend_converted,currency_code_converted
+2023-09-01,Intel,intel.com,10432.56,USD,10432.56,USD
+2023-09-02,Intel,intel.com,9354.02,USD,9354.02,USD
+2023-09-01,Shopify,shopify.com,6778.45,EUR,7224,USD
+2023-09-01,IBM,ibm.com,14876.78,USD,14876.78,USD
+2023-09-01,,,21375.65,EUR,22782,USD
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-  ```
