@@ -50,7 +50,7 @@ options:
 ## Example usage
 
 ```sh
-cat input.csv
+>cat input.csv
 date,company_name,company_domain,spend,currency_code
 2023-09-01,,intel.com,10432.56,USD
 2023-09-02,,intel.com,9354.02,USD
@@ -66,7 +66,7 @@ Output file written to output.csv in CSV
 ```
 
 ```sh
-cat output.csv
+>cat output.csv
 date,company_name,company_domain,spend,currency_code,spend_converted,currency_code_converted
 2023-09-01,Intel,intel.com,10432.56,USD,10432.56,USD
 2023-09-02,Intel,intel.com,9354.02,USD,9354.02,USD
