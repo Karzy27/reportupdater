@@ -5,7 +5,6 @@ import os
 import sys
 import json
 import csv
-from datetime import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -17,7 +16,7 @@ def get_currencies():
     '''
     Provides avaliable currencies for conversion from frankfurter app
     Return:
-        - Dict[str,str] containing currency symbol as key and description as value
+        - Dict containing currency symbol as key and description as value
     '''
     try:
         response = requests.get(f'https://api.frankfurter.app/currencies')
@@ -41,10 +40,22 @@ def parse_args(args):
 
     # Creating parser
     parser = argparse.ArgumentParser(
-        prog='enrich',
-        description=f"""
-        Updates information about company names, company domains and spend in different currencies from a csv report
-        """,
+        prog='reportupdater',
+        description=f'''
+        Reportupdater enriches information companies, generates a file
+        with updated company’s name, domain and converts its spend into a currency of your choosing.
+
+        - avaliable currencies are :
+        {currency_symbols}
+
+        - requires input file to be .csv
+
+        - writes updated information in .csv or .jsonl file
+
+        - output file contains fieldnames :
+        {FIELDNAMES}
+        
+        ''',
         formatter_class=argparse.RawTextHelpFormatter
     )
     # Adding arguments to parser
@@ -87,13 +98,18 @@ def parse_args(args):
     except Exception as err:
         parser.error(str(err))
 
+    directory,filename = os.path.split(args.input)
+    root,ext = os.path.splitext(filename)
+    if ext != 'csv' :
+        parser.error(f'{filename} is not a csv file')
+
     # Checking the output path is a valid path
     directory,filename = os.path.split(args.output)
     if not os.path.isdir(directory) and directory != '':
-        parser.error(f"{directory} is not a valid directory")
+        parser.error(f'{directory} is not a valid directory')
     root,ext = os.path.splitext(filename)
     if ext not in ['.csv','.jsonl'] :
-        parser.error(f"{filename} is not a valid file name")
+        parser.error(f'{filename} is not a valid file name')
 
     return args
 
@@ -138,8 +154,8 @@ def clearbit_call(search_selection,row):
     Uses Clearbit API
     Parameters:
         - search_selection (String) : Flag that determines the type of search
-            - "domain" : search using the company’s domain
-            - "name"   : search using the company’s name
+            - 'domain' : search using the company’s domain
+            - 'name'   : search using the company’s name
         - row (Dict) : Entry from a csv containing data from a company
             expected {key:value} :
             - company_name(String) : name of the company
@@ -267,11 +283,11 @@ def enrich_report(input_file,currency,output_file,file_type):
 
 
 def entrypoint():
-    """
+    '''
     Entry point to reportupdater CLI
     Returns:
         - None
-    """
+    '''
     args = parse_args(sys.argv[1:])
     enrich_report(args.input,args.currency,args.output,args.type)
 
