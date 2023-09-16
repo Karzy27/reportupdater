@@ -257,7 +257,7 @@ def enrich_report(input_file,currency,output_file,file_type):
         # Checking type of the input file
         if file_type == 'CSV':
             output_file = output_file.replace('.jsonl','.csv')
-            updated_rows = csv_file_writer(output_file,fieldnames,reader,currency)
+            updated_rows = csv_file_writer(output_file,FIELDNAMES,reader,currency)
         else:
             output_file = output_file.replace('.csv','.jsonl')
             updated_rows = jsonl_file_writer(output_file,reader,currency)
