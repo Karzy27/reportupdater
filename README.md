@@ -89,7 +89,7 @@ You can deploy a image for this CLI.
 
 ```sh
 
-docker run enrich -i input.csv -o output.csv
+>docker run enrich -i input.csv -o output.csv
 
 ```
 
@@ -105,7 +105,7 @@ You can acces the enrich functionality by the use of an API:
 You can install both of the using the command:
 
 ```sh
-pip install fastapi[all]
+>pip install fastapi[all]
 ```
 
 ### Usage
@@ -113,7 +113,7 @@ pip install fastapi[all]
 - first you will need to start the server in the directory **/api** with :
 
 ```sh
-uvicorn main:app
+>uvicorn main:app
 ```
    
 - Next you will run the script enrich_request.py with the same parameters as in the CLI
@@ -121,7 +121,7 @@ uvicorn main:app
 - Example :
 
 ```sh
-python enrich_request.py template_input.csv output.csv CSV EUR
+>python enrich_request.py template_input.csv output.csv CSV EUR
 ```
 
 
