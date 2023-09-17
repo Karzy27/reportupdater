@@ -115,7 +115,7 @@ pip install fastapi[all]
 ```sh
 uvicorn main:app
 ```
-in the directory /api
+   in the directory /api
 
 - Next you will run the script enrich_request.py with the same parameters as in the CLI
 
