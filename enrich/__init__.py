@@ -46,11 +46,11 @@ def parse_args(args):
         with updated company’s name, domain and converts its spend into a currency of your choosing.
 
         - avaliable currencies are :
-        {currency_symbols}
+        {currencies}
 
-        - requires input file to be .csv
+        - requires input file to be .CSV
 
-        - writes updated information in .csv or .jsonl file
+        - writes updated information in .CSV or .JSONL file
 
         - output file contains fieldnames :
         {FIELDNAMES}
