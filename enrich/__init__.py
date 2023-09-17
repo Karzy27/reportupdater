@@ -63,7 +63,7 @@ def parse_args(args):
         '--input',
         '-i',
         type=str,
-        help='File path to the report you want to enrich'
+        help='File path to the report you want to enrich. Required'
     )
     parser.add_argument(
         '--currency',
@@ -71,13 +71,13 @@ def parse_args(args):
         type=str,
         choices=currency_symbols,
                     default='USD', required=False,
-        help='Currency to wich convert spend'
+        help='Currency to wich convert spend. USD by default'
     )
     parser.add_argument(
         '--output',
         '-o',
         type=str,
-        help='File path in wich the updated report will be saved'
+        help='File path in wich the updated report will be saved. Required'
     )
     parser.add_argument(
         '--type',
@@ -85,7 +85,7 @@ def parse_args(args):
         type=str,
         choices=['CSV','JSONL'],
                     default='CSV', required=False,
-        help='File type of the updated report'
+        help='File type of the updated report. CSV by default'
     )
 
     # Parsing args
