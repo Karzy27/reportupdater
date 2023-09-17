@@ -92,13 +92,9 @@ def parse_args(args):
     args = parser.parse_args(args)
 
     # Checking the input report provided is a valid file
-    try: 
-        with open(args.input, newline='') as csvfile:
-            reader = csv.DictReader(csvfile)       
-    except Exception as err:
-        parser.error(str(err))
-
     directory,filename = os.path.split(args.input)
+    if not os.path.isfile(directory) and directory != '':
+        parser.error(f'{directory} is not a file')
     root,ext = os.path.splitext(filename)
     if ext != '.csv' :
         parser.error(f'{filename} is not a csv file')

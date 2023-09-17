@@ -6,11 +6,12 @@ setup(
     description="reportupdater CLI",
     classifiers=["Programming Language :: Python :: 3.11"],
     install_requires=[
-        "requests",
+        "requests"
     ],
     extras_require={
         "TEST": [
-            "pytest"
+            "pytest",
+            "pytest-mock"
         ]
     },
     entry_points={
