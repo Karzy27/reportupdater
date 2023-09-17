@@ -38,13 +38,13 @@ usage: enrich [-h] [--input INPUT] [--currency {AUD,BGN,BRL,CAD,CHF,CNY,CZK,DKK,
 options:
   -h, --help            show this help message and exit
   --input INPUT, -i INPUT
-                        File path to the report you want to enrich
+                        File path to the report you want to enrich. Required
   --currency {AUD,BGN,BRL,CAD,CHF,CNY,CZK,DKK,EUR,GBP,HKD,HUF,IDR,ILS,INR,ISK,JPY,KRW,MXN,MYR,NOK,NZD,PHP,PLN,RON,SEK,SGD,THB,TRY,USD,ZAR}, -c {AUD,BGN,BRL,CAD,CHF,CNY,CZK,DKK,EUR,GBP,HKD,HUF,IDR,ILS,INR,ISK,JPY,KRW,MXN,MYR,NOK,NZD,PHP,PLN,RON,SEK,SGD,THB,TRY,USD,ZAR}
-                        Currency to wich convert spend
+                        Currency to wich convert spend. USD by default
   --output OUTPUT, -o OUTPUT
-                        File path in wich the updated report will be saved
+                        File path in wich the updated report will be saved. Required
   --type {CSV,JSONL}, -t {CSV,JSONL}
-                        File type of the updated report
+                        File type of the updated report. CSV by default
 ```
 
 ## Example usage
@@ -73,5 +73,23 @@ date,company_name,company_domain,spend,currency_code,spend_converted,currency_co
 2023-09-01,Shopify,shopify.com,6778.45,EUR,7224,USD
 2023-09-01,IBM,ibm.com,14876.78,USD,14876.78,USD
 2023-09-01,,,21375.65,EUR,22782,USD
+```
+
+## Docker Image
+
+You can deploy a image for this CLI.
+
+### Container build
+
+```sh
+>docker build -t enrich .
+
+```
+### Running CLI
+
+```sh
+
+docker run enrich -i input.csv -o output.csv
+
 ```
 

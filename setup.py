@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="reportupdater",
-    version="0.1.0",
+    version="1.0",
     description="reportupdater CLI",
     classifiers=["Programming Language :: Python :: 3.11"],
     install_requires=[
