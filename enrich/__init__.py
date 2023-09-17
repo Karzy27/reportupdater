@@ -93,7 +93,7 @@ def parse_args(args):
 
     # Checking the input report provided is a valid file
     if not os.path.isfile(args.input):
-        parser.error(f'{directory} is not a file')
+        parser.error(f'{args.input} is not a file')
     directory,filename = os.path.split(args.input)
     root,ext = os.path.splitext(filename)
     if ext != '.csv' :
