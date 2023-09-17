@@ -79,13 +79,13 @@ date,company_name,company_domain,spend,currency_code,spend_converted,currency_co
 
 You can deploy a image for this CLI.
 
-### 1 Container build
+### 1: Container build
 
 ```sh
 >docker build -t enrich .
 
 ```
-### 2 Running CLI
+### 2: Running CLI
 
 ```sh
 
