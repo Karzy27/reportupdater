@@ -93,3 +93,36 @@ docker run enrich -i input.csv -o output.csv
 
 ```
 
+## API Request
+
+You can acces the enrich functionality by the use of an API:
+
+### Requirements
+
+- fastapi
+- uvicorn
+
+You can install both of the using the command:
+
+```sh
+pip install fastapi[all]
+```
+
+### Usage
+
+- first you will need to start the server with :
+
+```sh
+uvicorn main:app
+```
+in the directory /api
+
+- Next you will run the script enrich_request.py with the same parameters as in the CLI
+
+- Example :
+
+```sh
+python enrich_request.py template_input.csv output.csv CSV EUR
+```
+
+
