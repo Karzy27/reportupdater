@@ -110,7 +110,7 @@ pip install fastapi[all]
 
 ### Usage
 
-- first you will need to start the server in the directory /api with :
+- first you will need to start the server in the directory **/api** with :
 
 ```sh
 uvicorn main:app
